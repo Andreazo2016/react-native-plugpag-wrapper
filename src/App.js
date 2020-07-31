@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useState} from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
 import PlugPageModule from './modules/PluPagModule';
@@ -6,11 +6,11 @@ import PlugPageModule from './modules/PluPagModule';
 
 const App = () => {
 
-  async function handleAuthentication() {
-    PlugPageModule.getApplicationCode().then((result) => {
+  const [applicationVersion,setApplicationVersion] = useState('');
 
-      console.log(result); 
-    })
+  async function handleApplicationVersion() {
+    const response = await PlugPageModule.getApplicationVersion();
+    setApplicationVersion(response);
   }
 
   return (
@@ -27,10 +27,11 @@ const App = () => {
           padding: 16,
           borderRadius: 10
         }}
-        onPress={handleAuthentication}
+        onPress={handleApplicationVersion}
       >
-        <Text>Desafio de React Native</Text>
+        <Text>Obter a versão da aplicação</Text>
       </TouchableOpacity>
+    <Text>{applicationVersion}</Text>
     </View>
   )
 }

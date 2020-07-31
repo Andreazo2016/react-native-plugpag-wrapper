@@ -1,5 +1,6 @@
 package com.desafioreactnative;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import com.facebook.react.bridge.Arguments;
@@ -36,13 +37,22 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getApplicationCode(Promise promise) {
+    public void getApplicationVersion(Promise promise) {
         final WritableMap map = Arguments.createMap();
-        PlugPag plugpag = new PlugPag(getReactApplicationContext(), new PlugPagAppIdentification("appName", "1.0.0"));
-        Boolean isAuthenticated = plugpag.isAuthenticated();
-        promise.resolve(isAuthenticated);
-
+        PlugPag plugpag = new PlugPag(getReactApplicationContext(), new PlugPagAppIdentification("AppDemo","1.0"));
+        PlugPagAppIdentification identification = plugpag.getAppIdentification();
+        String version = identification.getVersion();
+        promise.resolve(version);
     }
+
+      @ReactMethod
+    public void getLibVersion(Promise promise) {
+        final WritableMap map = Arguments.createMap();
+        PlugPag plugpag = new PlugPag(getReactApplicationContext(), new PlugPagAppIdentification("AppDemo","1.0"));
+        String libVersion = plugpag.getLibVersion();
+        promise.resolve(libVersion);
+    }
+
 
     @ReactMethod
     public void show(String message) {
