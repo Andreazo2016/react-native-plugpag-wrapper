@@ -17,7 +17,7 @@ const App = () => {
       try {
         const request = {
           salesCode: 'RNPlugPag',
-          amount: 200,
+          amount: '200',
         }
         await RNPlugPag.doPaymentCreditCrad(request);
 
