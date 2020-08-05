@@ -54,7 +54,6 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getLibVersion(ReadableMap request, Promise promise) throws Exception {
 
-        Log.d("Start", "Buscando LibVersion");
         final WritableMap map = Arguments.createMap();
 
         String appName = request.getString("appName");
@@ -67,11 +66,8 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
         PlugPag plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
 
         // Obtém a versão da biblioteca
-        Log.d("version", "antes da lib");
-
+      
         String version = plugpag.getLibVersion();
-
-        Log.d("version", "version");
 
         map.putString("version", version);
 

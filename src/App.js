@@ -10,36 +10,12 @@ const App = () => {
     RNPlugPag.setAppInfo('AppDemo', '1.0.7');
     RNPlugPag.setActivationCode('403938');
 
-    //const { isAuthenticated } = await RNPlugPag.isAuthenticated();
+    const { isAuthenticated } = await RNPlugPag.isAuthenticated();
 
+    Alert.alert('Autenticação do usuário',
+      ` Usuário autenticado : ${isAuthenticated ? "Sim" : "Não"}`
+    )
 
-    const { version } = await RNPlugPag.getLibVersion();
-
-    Alert.alert('Version', version);
-
-    /*
-
-    if (isAuthenticated) {
-
-      try {
-        const request = {
-          salesCode: 'RNPlugPag',
-          amount: '200',
-        }
-        await RNPlugPag.doPaymentCreditCrad(request);
-
-        Alert.alert("Sucesso", "Pagamento realizado com sucesso!!")
-      } catch (error) {
-        Alert.alert("Ops", "Não foi possível realizar o pagamento")
-      }
-
-    } else {
-      Alert.alert(
-        'Autenticação inválida',
-        'Usuário não autenticado'
-      );
-    }
-    */
   }
 
   return (
@@ -58,7 +34,7 @@ const App = () => {
         }}
         onPress={handleApplicationPayment}
       >
-        <Text>Realizar pagamento de R$ 200</Text>
+        <Text>Usuário está autenticado?</Text>
       </TouchableOpacity>
     </View>
   )
