@@ -183,16 +183,14 @@ android {
 }
 
 dependencies {
+    implementation 'br.com.uol.pagseguro.plugpagservice.wrapper:wrapper:1.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.21"
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.72"
     
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
-
-    implementation 'br.com.uol.pagseguro.plugpagservice.wrapper:wrapper:1.7.6'
-    implementation 'com.android.support:design:28.0.0'
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

@@ -7,13 +7,20 @@ import { RNPlugPag } from './modules/PluPagModule';
 const App = () => {
 
   async function handleApplicationPayment() {
-    RNPlugPag.setAppInfo('AppDemo','1.0.7');
+    RNPlugPag.setAppInfo('AppDemo', '1.0.7');
     RNPlugPag.setActivationCode('403938');
 
-    const isAuthenticated = await RNPlugPag.isAuthenticated();
+    //const { isAuthenticated } = await RNPlugPag.isAuthenticated();
+
+
+    const { version } = await RNPlugPag.getLibVersion();
+
+    Alert.alert('Version', version);
+
+    /*
 
     if (isAuthenticated) {
-      
+
       try {
         const request = {
           salesCode: 'RNPlugPag',
@@ -21,7 +28,7 @@ const App = () => {
         }
         await RNPlugPag.doPaymentCreditCrad(request);
 
-        Alert.alert("Sucesso","Pagamento realizado com sucesso!!")
+        Alert.alert("Sucesso", "Pagamento realizado com sucesso!!")
       } catch (error) {
         Alert.alert("Ops", "Não foi possível realizar o pagamento")
       }
@@ -32,6 +39,7 @@ const App = () => {
         'Usuário não autenticado'
       );
     }
+    */
   }
 
   return (

@@ -23,6 +23,13 @@ export const RNPlugPag = {
         this.activationCode = activationCode;
     },
 
+    getLibVersion(){
+        if (!this.appName || !this.appVersion) {
+            throw new Error('You must set appName and appVersion before call isAuthenticated method.');
+        }
+
+        return PlugPagModule.getLibVersion({ appName: this.appName, appVersion: this.appVersion });
+    },
 
     isAuthenticated() {
         if (!this.appName || !this.appVersion) {

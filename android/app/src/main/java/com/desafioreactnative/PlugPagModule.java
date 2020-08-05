@@ -52,12 +52,40 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getLibVersion(ReadableMap request, Promise promise) throws Exception {
+
+        Log.d("Start", "Buscando LibVersion");
+        final WritableMap map = Arguments.createMap();
+
+        String appName = request.getString("appName");
+
+        String appVersion = request.getString("appVersion");
+        // Cria a identificação do aplicativo
+        PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
+
+        // Cria a referência do PlugPag
+        PlugPag plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
+
+        // Obtém a versão da biblioteca
+        Log.d("version", "antes da lib");
+
+        String version = plugpag.getLibVersion();
+
+        Log.d("version", "version");
+
+        map.putString("version", version);
+
+        promise.resolve(map);
+
+    }
+
+    @ReactMethod
     public void isAuthenticated(ReadableMap request, Promise promise) {
         String appName = request.getString("appName");
         String appVersion = request.getString("appVersion");
 
         PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
-        final PlugPag plugpag = new PlugPag(reactContext, appIdentification);
+        final PlugPag plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<Boolean> callable = new Callable<Boolean>() {
@@ -82,7 +110,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void doPaymentCreditCrad(ReadableMap request, Promise promise) throws Exception{
+    public void doPaymentCreditCrad(ReadableMap request, Promise promise) throws Exception {
         String appName = request.getString("appName");
         String appVersion = request.getString("appVersion");
         String activationCode = request.getString("activationCode");
