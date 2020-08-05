@@ -1,16 +1,37 @@
-import React,{useState} from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 
-import PlugPageModule from './modules/PluPagModule';
+import { RNPlugPag } from './modules/PluPagModule';
 
 
 const App = () => {
 
-  const [applicationVersion,setApplicationVersion] = useState('');
+  async function handleApplicationPayment() {
+    RNPlugPag.setAppInfo('AppDemo','1.0.7');
+    RNPlugPag.setActivationCode('403938');
 
-  async function handleApplicationVersion() {
-    const response = await PlugPageModule.getApplicationVersion();
-    setApplicationVersion(response);
+    const isAuthenticated = await RNPlugPag.isAuthenticated();
+
+    if (isAuthenticated) {
+      
+      try {
+        const request = {
+          salesCode: 'RNPlugPag',
+          amount: 200,
+        }
+        await RNPlugPag.doPaymentCreditCrad(request);
+
+        Alert.alert("Sucesso","Pagamento realizado com sucesso!!")
+      } catch (error) {
+        Alert.alert("Ops", "Não foi possível realizar o pagamento")
+      }
+
+    } else {
+      Alert.alert(
+        'Autenticação inválida',
+        'Usuário não autenticado'
+      );
+    }
   }
 
   return (
@@ -27,11 +48,10 @@ const App = () => {
           padding: 16,
           borderRadius: 10
         }}
-        onPress={handleApplicationVersion}
+        onPress={handleApplicationPayment}
       >
-        <Text>Obter a versão da aplicação</Text>
+        <Text>Realizar pagamento de R$ 200</Text>
       </TouchableOpacity>
-    <Text>{applicationVersion}</Text>
     </View>
   )
 }
