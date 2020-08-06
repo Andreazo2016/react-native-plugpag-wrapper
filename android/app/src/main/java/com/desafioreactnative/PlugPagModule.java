@@ -110,6 +110,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
         // Cria a referência do PlugPag
         this.plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
+        paymentListner();
         Log.d("InitializePlugPag", "Finishing initializePlugPag");
     }
 
@@ -156,7 +157,6 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
         final WritableMap map = Arguments.createMap();
 
-        paymentListner();
         ExecutorService paymentExecutor = Executors.newSingleThreadExecutor();
         Callable<PlugPagTransactionResult> paymentCallable = new Callable<PlugPagTransactionResult>() {
             @Override
