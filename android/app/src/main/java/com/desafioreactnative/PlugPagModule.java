@@ -110,9 +110,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     public void initializeAndActivatePinpad(ReadableMap request, Promise promise) {
         Log.d("InitializeAndActivatePinpad","Starting InitializeAndActivatePinpad");
         String activationCode = request.getString("activationCode");
-        PlugPagInitializationResult result = this.plugpag
-                .initializeAndActivatePinpad(new PlugPagActivationData(activationCode));
-
+        PlugPagInitializationResult result = this.plugpag.initializeAndActivatePinpad(new PlugPagActivationData(activationCode));
         final WritableMap map = Arguments.createMap();
         if (result != null && result.getResult() == PlugPag.RET_OK) {
             Log.d("InitializeAndActivatePinpad","Sucesss");
