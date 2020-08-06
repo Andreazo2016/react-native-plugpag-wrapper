@@ -66,7 +66,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
         PlugPag plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
 
         // Obtém a versão da biblioteca
-      
+
         String version = plugpag.getLibVersion();
 
         map.putString("version", version);
@@ -111,11 +111,11 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
         String appVersion = request.getString("appVersion");
         String activationCode = request.getString("activationCode");
         String amount = request.getString("amount");
-        String SalesCode = request.getString("salesCode");
+        String salesCode = request.getString("salesCode");
 
         // Define os dados do pagamento
         PlugPagPaymentData paymentData = new PlugPagPaymentData(PlugPag.TYPE_CREDITO, Integer.valueOf(amount),
-                PlugPag.INSTALLMENT_TYPE_A_VISTA, 1, SalesCode);
+                PlugPag.INSTALLMENT_TYPE_A_VISTA, 1, salesCode);
 
         // Cria a identificação do aplicativo
         PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
@@ -150,6 +150,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
             };
 
             Future<PlugPagTransactionResult> transactionResult = paymentExecutor.submit(paymentCallable);
+            paymentExecutor.shutdown();
 
             if (transactionResult.get() != null && transactionResult.get().getResult() == PlugPag.RET_OK) {
 
