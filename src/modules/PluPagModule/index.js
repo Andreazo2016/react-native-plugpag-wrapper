@@ -1,8 +1,11 @@
-import { NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules } from 'react-native';
 
 const { PlugPagModule } = NativeModules;
 
-export const RNPlugPag = {
+const EventEmitter = new NativeEventEmitter(PlugPagModule);
+
+
+const RNPlugPag = {
     appName: '',
     appVersion: '',
     activationCode: '',
@@ -23,7 +26,7 @@ export const RNPlugPag = {
         this.activationCode = activationCode;
     },
 
-   
+
     initializePlugPag() {
         if (!this.appName || !this.appVersion) {
             throw new Error('You must set appName and appVersion before call isAuthenticated method.');
@@ -31,7 +34,7 @@ export const RNPlugPag = {
 
         return PlugPagModule.initializePlugPag({ appName: this.appName, appVersion: this.appVersion });
     },
-   async initializeAndActivatePinpad() {
+    async initializeAndActivatePinpad() {
         if (!this.appName || !this.appVersion) {
             throw new Error('You must set appName and appVersion before call isAuthenticated method.');
         }
@@ -63,5 +66,5 @@ export const RNPlugPag = {
     }
 };
 
-
+export { RNPlugPag, EventEmitter }
 

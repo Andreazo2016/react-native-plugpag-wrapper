@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 
-import { RNPlugPag } from './modules/PluPagModule';
+import { RNPlugPag, EventEmitter } from './modules/PluPagModule';
 
 
 const App = () => {
 
-  async function handleApplicationPayment() {
+
+
+
+  const handleApplicationPayment = useCallback(async () => {
 
     try {
       RNPlugPag.setAppInfo('AppDemo', '1.0.7');
@@ -31,8 +34,29 @@ const App = () => {
     } catch (error) {
       Alert.alert('Erro', error.message);
     }
-  }
+  }, [])
 
+  const handlePayment = useCallback(() => {
+    Alert.alert(
+      'Aviso',
+      'Antes de concluir pagamento,\n Insira o cartão na maquininha!!',
+      [
+        {
+          text: 'cancelar',
+          onPress: () => { },
+          style: 'cancel'
+        },
+        { text: 'confirmar', onPress: handleApplicationPayment }
+      ]
+    );
+  }, [])
+
+
+  useState(() => {
+    EventEmitter.addListener('paymentEvent',(event) => {
+      console.log(event)
+    })
+   }, [EventEmitter])
   return (
     <View
       style={{
@@ -47,7 +71,7 @@ const App = () => {
           padding: 16,
           borderRadius: 10
         }}
-        onPress={handleApplicationPayment}
+        onPress={handlePayment}
       >
         <Text>Realizar pagamento de R$ 2</Text>
       </TouchableOpacity>

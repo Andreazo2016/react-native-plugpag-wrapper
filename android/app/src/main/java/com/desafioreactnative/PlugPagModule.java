@@ -3,6 +3,7 @@ package com.desafioreactnative;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -17,6 +18,8 @@ import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagTransactionResult;
 import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagPaymentData;
 import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagActivationData;
 import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagInitializationResult;
+import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagEventListener;
+import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagEventData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +37,10 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     PlugPagModule(ReactApplicationContext context) {
         super(context);
         reactContext = context;
+    }
+
+    private void sendEvent(ReactApplicationContext reactContext, String eventName, final WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
     }
 
     @Override
@@ -67,7 +74,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void isAuthenticated(Promise promise) {
-        Log.d("Authentication","Authentication");
+        Log.d("Authentication", "Authentication");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<Boolean> callable = new Callable<Boolean>() {
             @Override
@@ -83,10 +90,10 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
             map.putBoolean("isAuthenticated", future.get());
             promise.resolve(map);
         } catch (InterruptedException e) {
-            Log.d("Authentication Failure",e.getMessage());
+            Log.d("Authentication Failure", e.getMessage());
             promise.reject("000", e.getMessage());
         } catch (ExecutionException e) {
-            Log.d("Authentication Failure",e.getMessage());
+            Log.d("Authentication Failure", e.getMessage());
             promise.reject("000", e.getMessage());
         }
 
@@ -94,7 +101,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void initializePlugPag(ReadableMap request) {
-        Log.d("InitializePlugPag","Starting initializePlugPag");
+        Log.d("InitializePlugPag", "Starting initializePlugPag");
         String appName = request.getString("appName");
         String appVersion = request.getString("appVersion");
 
@@ -103,29 +110,43 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
         // Cria a referência do PlugPag
         this.plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
-        Log.d("InitializePlugPag","Finishing initializePlugPag");
+        Log.d("InitializePlugPag", "Finishing initializePlugPag");
     }
 
     @ReactMethod
     public void initializeAndActivatePinpad(ReadableMap request, Promise promise) {
-        Log.d("InitializeAndActivatePinpad","Starting InitializeAndActivatePinpad");
+        Log.d("InitializeAndActivatePinpad", "Starting InitializeAndActivatePinpad");
         String activationCode = request.getString("activationCode");
-        PlugPagInitializationResult result = this.plugpag.initializeAndActivatePinpad(new PlugPagActivationData(activationCode));
+        PlugPagInitializationResult result = this.plugpag
+                .initializeAndActivatePinpad(new PlugPagActivationData(activationCode));
         final WritableMap map = Arguments.createMap();
         if (result != null && result.getResult() == PlugPag.RET_OK) {
-            Log.d("InitializeAndActivatePinpad","Sucesss");
+            Log.d("InitializeAndActivatePinpad", "Sucesss");
             map.putBoolean("sucess", true);
             promise.resolve(map);
         } else {
-            Log.d("InitializeAndActivatePinpad","Failure");
+            Log.d("InitializeAndActivatePinpad", "Failure");
             map.putBoolean("sucess", false);
             promise.resolve(map);
         }
     }
 
+    private void paymentListner() {
+        this.plugpag.setEventListener(new PlugPagEventListener() {
+            @Override
+            public void onEvent(PlugPagEventData data) {
+                final WritableMap map = Arguments.createMap();
+                int eventCode = data.getEventCode();
+                Log.d("Event", "" + eventCode);
+                map.putInt("event", eventCode);
+                sendEvent(reactContext, "paymentEvent", map);
+            }
+        });
+    }
+
     @ReactMethod
     public void doPaymentCreditCrad(ReadableMap request, Promise promise) throws Exception {
-        Log.d("doPaymentCreditCrad","Starting...");
+        Log.d("doPaymentCreditCrad", "Starting...");
         String amount = request.getString("amount");
         String salesCode = request.getString("salesCode");
 
@@ -135,26 +156,27 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
         final WritableMap map = Arguments.createMap();
 
+        paymentListner();
         ExecutorService paymentExecutor = Executors.newSingleThreadExecutor();
         Callable<PlugPagTransactionResult> paymentCallable = new Callable<PlugPagTransactionResult>() {
             @Override
             public PlugPagTransactionResult call() {
-                Log.d("doPaymentCreditCrad","Making a call");
+                Log.d("doPaymentCreditCrad", "Making a call");
                 return plugpag.doPayment(paymentData);
             }
         };
 
         Future<PlugPagTransactionResult> transactionResult = paymentExecutor.submit(paymentCallable);
         paymentExecutor.shutdown();
-        Log.d("doPaymentCreditCrad","Finished a call");
+        Log.d("doPaymentCreditCrad", "Finished a call");
 
         if (transactionResult.get() != null && transactionResult.get().getResult() == PlugPag.RET_OK) {
-            Log.d("doPaymentCreditCrad","Payment created with successful");
+            Log.d("doPaymentCreditCrad", "Payment created with successful");
             map.putInt("code", transactionResult.get().getResult());
             map.putString("msg", transactionResult.get().getMessage());
             promise.resolve(map);
         } else {
-            Log.d("doPaymentCreditCrad","Payment created with successful");
+            Log.d("doPaymentCreditCrad", "Payment created with successful");
             promise.reject("erro", "Something wrong with transaction");
         }
 
