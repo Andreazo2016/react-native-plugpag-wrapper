@@ -6,9 +6,6 @@ import { RNPlugPag, EventEmitter } from './modules/PluPagModule';
 
 const App = () => {
 
-
-
-
   const handleApplicationPayment = useCallback(async () => {
 
     try {
