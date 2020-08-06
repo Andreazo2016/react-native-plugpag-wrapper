@@ -49,7 +49,7 @@ const App = () => {
         }}
         onPress={handleApplicationPayment}
       >
-        <Text>Realizar pagamento de R$ 200</Text>
+        <Text>Realizar pagamento de R$ 2</Text>
       </TouchableOpacity>
     </View>
   )

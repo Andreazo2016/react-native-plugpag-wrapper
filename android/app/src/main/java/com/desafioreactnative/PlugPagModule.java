@@ -146,6 +146,7 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
 
         Future<PlugPagTransactionResult> transactionResult = paymentExecutor.submit(paymentCallable);
         paymentExecutor.shutdown();
+        Log.d("doPaymentCreditCrad","Finished a call");
 
         if (transactionResult.get() != null && transactionResult.get().getResult() == PlugPag.RET_OK) {
             Log.d("doPaymentCreditCrad","Payment created with successful");
