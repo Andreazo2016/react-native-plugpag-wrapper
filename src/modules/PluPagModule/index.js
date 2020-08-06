@@ -23,12 +23,25 @@ export const RNPlugPag = {
         this.activationCode = activationCode;
     },
 
-    getLibVersion(){
+    initializePlugPag() {
         if (!this.appName || !this.appVersion) {
             throw new Error('You must set appName and appVersion before call isAuthenticated method.');
         }
 
-        return PlugPagModule.getLibVersion({ appName: this.appName, appVersion: this.appVersion });
+        return PlugPagModule.initializePlugPag({ appName: this.appName, appVersion: this.appVersion });
+    },
+    initializeAndActivatePinpad() {
+        if (!this.appName || !this.appVersion) {
+            throw new Error('You must set appName and appVersion before call isAuthenticated method.');
+        }
+        return PlugPagModule.initializeAndActivatePinpad({ activationCode: this.activationCode });
+    },
+    getLibVersion() {
+        if (!this.appName || !this.appVersion) {
+            throw new Error('You must set appName and appVersion before call isAuthenticated method.');
+        }
+
+        return PlugPagModule.getLibVersion();
     },
 
     isAuthenticated() {
@@ -36,7 +49,7 @@ export const RNPlugPag = {
             throw new Error('You must set appName and appVersion before call isAuthenticated method.');
         }
 
-        return PlugPagModule.isAuthenticated({ appName: this.appName, appVersion: this.appVersion });
+        return PlugPagModule.isAuthenticated();
     },
     doPaymentCreditCrad(request) {
 
@@ -44,7 +57,7 @@ export const RNPlugPag = {
             throw new Error('You must set appName, appVersion and activationCode before call checkout method.');
         }
 
-        return PlugPagModule.doPaymentCreditCrad({ ...request, appName: this.appName, appVersion: this.appVersion, activationCode: this.activationCode })
+        return PlugPagModule.doPaymentCreditCrad({ ...request, activationCode: this.activationCode })
 
     }
 };

@@ -7,16 +7,23 @@ import { RNPlugPag } from './modules/PluPagModule';
 const App = () => {
 
   async function handleApplicationPayment() {
-    RNPlugPag.setAppInfo('AppDemo', '1.0.7');
-    RNPlugPag.setActivationCode('403938');
 
     try {
+      RNPlugPag.setAppInfo('AppDemo', '1.0.7');
+      RNPlugPag.setActivationCode('403938');
+      RNPlugPag.initializePlugPag();
+      const { sucess } = await RNPlugPag.initializeAndActivatePinpad();
+
+      if (!sucess) {
+        Alert.alert('Ops', 'Não foi possível iniciar a maquininha!!');
+        return;
+      }
 
       const { isAuthenticated } = await RNPlugPag.isAuthenticated();
 
       if (isAuthenticated) {
         await RNPlugPag.doPaymentCreditCrad({ amount: "200", salesCode: 'RNPlugPag' });
-        Alert.alert("Sucesso","Pagamento realizado com sucesso!!");
+        Alert.alert("Sucesso", "Pagamento realizado com sucesso!!");
       } else {
         Alert.alert('Falha na autentticação', 'Usuário não autenticado!!');
       }

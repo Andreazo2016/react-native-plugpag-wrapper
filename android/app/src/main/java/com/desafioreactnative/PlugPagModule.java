@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 public class PlugPagModule extends ReactContextBaseJavaModule {
 
     private static ReactApplicationContext reactContext;
+    private PlugPag plugpag;
 
     PlugPagModule(ReactApplicationContext context) {
         super(context);
@@ -52,22 +53,11 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getLibVersion(ReadableMap request, Promise promise) throws Exception {
+    public void getLibVersion(Promise promise) {
 
         final WritableMap map = Arguments.createMap();
 
-        String appName = request.getString("appName");
-
-        String appVersion = request.getString("appVersion");
-        // Cria a identificação do aplicativo
-        PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
-
-        // Cria a referência do PlugPag
-        PlugPag plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
-
-        // Obtém a versão da biblioteca
-
-        String version = plugpag.getLibVersion();
+        String version = this.plugpag.getLibVersion();
 
         map.putString("version", version);
 
@@ -76,13 +66,8 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isAuthenticated(ReadableMap request, Promise promise) {
-        String appName = request.getString("appName");
-        String appVersion = request.getString("appVersion");
-
-        PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
-        final PlugPag plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
-
+    public void isAuthenticated(Promise promise) {
+        Log.d("Authentication","Authentication");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<Boolean> callable = new Callable<Boolean>() {
             @Override
@@ -98,18 +83,51 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
             map.putBoolean("isAuthenticated", future.get());
             promise.resolve(map);
         } catch (InterruptedException e) {
+            Log.d("Authentication Failure",e.getMessage());
             promise.reject("000", e.getMessage());
         } catch (ExecutionException e) {
+            Log.d("Authentication Failure",e.getMessage());
             promise.reject("000", e.getMessage());
         }
 
     }
 
     @ReactMethod
-    public void doPaymentCreditCrad(ReadableMap request, Promise promise) throws Exception {
+    public void initializePlugPag(ReadableMap request) {
+        Log.d("InitializePlugPag","Starting initializePlugPag");
         String appName = request.getString("appName");
         String appVersion = request.getString("appVersion");
+
+        // Cria a identificação do aplicativo
+        PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
+
+        // Cria a referência do PlugPag
+        this.plugpag = new PlugPag(getReactApplicationContext(), appIdentification);
+        Log.d("InitializePlugPag","Finishing initializePlugPag");
+    }
+
+    @ReactMethod
+    public void initializeAndActivatePinpad(ReadableMap request, Promise promise) {
+        Log.d("InitializeAndActivatePinpad","Starting InitializeAndActivatePinpad");
         String activationCode = request.getString("activationCode");
+        PlugPagInitializationResult result = this.plugpag
+                .initializeAndActivatePinpad(new PlugPagActivationData(activationCode));
+
+        final WritableMap map = Arguments.createMap();
+        if (result != null && result.getResult() == PlugPag.RET_OK) {
+            Log.d("InitializeAndActivatePinpad","Sucesss");
+            map.putBoolean("sucess", true);
+            promise.resolve(map);
+        } else {
+            Log.d("InitializeAndActivatePinpad","Failure");
+            map.putBoolean("sucess", false);
+            promise.resolve(map);
+        }
+    }
+
+    @ReactMethod
+    public void doPaymentCreditCrad(ReadableMap request, Promise promise) throws Exception {
+        Log.d("doPaymentCreditCrad","Starting...");
         String amount = request.getString("amount");
         String salesCode = request.getString("salesCode");
 
@@ -117,55 +135,30 @@ public class PlugPagModule extends ReactContextBaseJavaModule {
         PlugPagPaymentData paymentData = new PlugPagPaymentData(PlugPag.TYPE_CREDITO, Integer.valueOf(amount),
                 PlugPag.INSTALLMENT_TYPE_A_VISTA, 1, salesCode);
 
-        // Cria a identificação do aplicativo
-        PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
-
-        // Cria a referência do PlugPag
-        PlugPag plugpag = new PlugPag(reactContext, appIdentification);
-
-        ExecutorService connectionExecutor = Executors.newSingleThreadExecutor();
-        Callable<PlugPagInitializationResult> connectionCallable = new Callable<PlugPagInitializationResult>() {
-            @Override
-            public PlugPagInitializationResult call() {
-                return plugpag.initializeAndActivatePinpad(new PlugPagActivationData(activationCode));
-
-            }
-        };
-        Future<PlugPagInitializationResult> initResult = connectionExecutor.submit(connectionCallable);
-        connectionExecutor.shutdown();
-
-        // Ativa terminal e faz o pagamento
-        PlugPagInitializationResult initResultCode = initResult.get();
-
         final WritableMap map = Arguments.createMap();
 
-        if (initResult.get() != null && initResultCode.getResult() == PlugPag.RET_OK) {
-
-            ExecutorService paymentExecutor = Executors.newSingleThreadExecutor();
-            Callable<PlugPagTransactionResult> paymentCallable = new Callable<PlugPagTransactionResult>() {
-                @Override
-                public PlugPagTransactionResult call() {
-                    return plugpag.doPayment(paymentData);
-                }
-            };
-
-            Future<PlugPagTransactionResult> transactionResult = paymentExecutor.submit(paymentCallable);
-            paymentExecutor.shutdown();
-
-            if (transactionResult.get() != null && transactionResult.get().getResult() == PlugPag.RET_OK) {
-
-                if (transactionResult.get() != null) {
-                    map.putInt("code", transactionResult.get().getResult());
-                    map.putString("msg", transactionResult.get().getMessage());
-                    promise.resolve(map);
-                }
-            } else {
-                promise.reject("erro", "Something wrong with transaction");
+        ExecutorService paymentExecutor = Executors.newSingleThreadExecutor();
+        Callable<PlugPagTransactionResult> paymentCallable = new Callable<PlugPagTransactionResult>() {
+            @Override
+            public PlugPagTransactionResult call() {
+                Log.d("doPaymentCreditCrad","Making a call");
+                return plugpag.doPayment(paymentData);
             }
+        };
 
+        Future<PlugPagTransactionResult> transactionResult = paymentExecutor.submit(paymentCallable);
+        paymentExecutor.shutdown();
+
+        if (transactionResult.get() != null && transactionResult.get().getResult() == PlugPag.RET_OK) {
+            Log.d("doPaymentCreditCrad","Payment created with successful");
+            map.putInt("code", transactionResult.get().getResult());
+            map.putString("msg", transactionResult.get().getMessage());
+            promise.resolve(map);
         } else {
-            promise.reject("erro", "Can't conect the device");
+            Log.d("doPaymentCreditCrad","Payment created with successful");
+            promise.reject("erro", "Something wrong with transaction");
         }
+
     }
 
     @ReactMethod
